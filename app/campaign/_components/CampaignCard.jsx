@@ -3,40 +3,48 @@
 import { MoreHorizontal, ExternalLink } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { motion } from "framer-motion"
 
 export default function CampaignCard({
   logoUrl,
   name,
   website,
   createdAt,
+  status = "draft", // "draft" | "in progress" | "completed"
   onEdit,
   onDelete,
 }) {
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef(null)
+  const statusVariants = {
+    draft: "secondary",
+    "in progress": "default",
+    completed: "outline",
+  }
 
-  useEffect(() => {
-    function onDocClick(e) {
-      if (!menuRef.current) return
-      if (!menuRef.current.contains(e.target)) setOpen(false)
-    }
-    document.addEventListener("click", onDocClick)
-    return () => document.removeEventListener("click", onDocClick)
-  }, [])
+  const statusColors = {
+    draft: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-500/20",
+    "in progress": "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20",
+    completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20",
+  }
 
   return (
     <motion.div
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.2 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
       className="font-raleway"
     >
-      <Card className="relative overflow-hidden border border-neutral-800 bg-gradient-to-b from-neutral-950 to-neutral-900 hover:border-neutral-700 transition-all duration-300 rounded-2xl shadow-[0_0_15px_-5px_rgba(255,255,255,0.1)]">
-        <CardHeader className="p-5 pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl border border-neutral-800 bg-neutral-900 overflow-hidden flex items-center justify-center shadow-inner">
+      <Card className="group relative overflow-hidden border border-neutral-800 bg-neutral-950 hover:border-neutral-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md">
+        <CardHeader className="p-6 pb-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3.5 flex-1 min-w-0">
+              <div className="h-12 w-12 rounded-lg border border-neutral-800 bg-neutral-900 overflow-hidden flex items-center justify-center shrink-0">
                 {logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -45,78 +53,66 @@ export default function CampaignCard({
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-xs text-neutral-500">Logo</span>
+                  <span className="text-xs font-medium text-neutral-600">Logo</span>
                 )}
               </div>
-              <div>
-                <CardTitle className="text-base font-semibold text-white">
-                  {name}
-                </CardTitle>
-                <CardDescription className="flex items-center gap-1 text-sm mt-0.5">
+              <div className="flex-1 min-w-0 pt-0.5">
+                <div className="flex items-center gap-2 mb-1">
+                  <CardTitle className="text-[15px] font-semibold text-white truncate">
+                    {name}
+                  </CardTitle>
+                  <Badge 
+                    variant="outline" 
+                    className={`text-[11px] font-medium ${statusColors[status] || statusColors.draft}`}
+                  >
+                    {status === "in progress" ? "In Progress" : status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Badge>
+                </div>
+                <CardDescription className="flex items-center gap-1 text-[13px]">
                   <a
                     href={website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-neutral-400 hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1.5 text-neutral-500 hover:text-neutral-300 transition-colors group/link"
                   >
-                    <ExternalLink size={14} />
-                    <span className="truncate max-w-[180px]">{website}</span>
+                    <ExternalLink size={12} className="shrink-0 opacity-60 group-hover/link:opacity-100" />
+                    <span className="truncate">{website.replace(/^https?:\/\//, '')}</span>
                   </a>
                 </CardDescription>
               </div>
             </div>
 
-            <div ref={menuRef} className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="More"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setOpen((v) => !v)
-                }}
-                className="text-neutral-400 hover:text-white transition-colors"
-              >
-                <MoreHorizontal size={18} />
-              </Button>
-
-              <AnimatePresence>
-                {open && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-2 w-36 rounded-md border border-neutral-800 bg-neutral-950/95 shadow-lg z-10 backdrop-blur-sm"
-                  >
-                    <button
-                      onClick={() => {
-                        setOpen(false)
-                        onEdit && onEdit()
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-900 rounded-t-md transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        setOpen(false)
-                        onDelete && onDelete()
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-neutral-900 rounded-b-md transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900 transition-colors"
+                >
+                  <MoreHorizontal size={16} />
+                  <span className="sr-only">More options</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={onEdit} className="text-[13px] font-medium cursor-pointer">
+                  Edit Campaign
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={onDelete} 
+                  className="text-[13px] font-medium text-red-400 focus:text-red-400 cursor-pointer"
+                >
+                  Delete Campaign
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
 
-        <CardContent className="px-5 pb-5 pt-0">
-          <div className="text-xs text-neutral-500">
-            Created on <span className="text-neutral-300">{createdAt}</span>
+        <CardContent className="px-6 pb-6 pt-0">
+          <div className="flex items-center gap-1.5 text-[13px] text-neutral-500">
+            <span>Created</span>
+            <span className="text-neutral-400 font-medium">{createdAt}</span>
           </div>
         </CardContent>
       </Card>
