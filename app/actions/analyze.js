@@ -46,7 +46,7 @@ export async function analyzeWebsite(url) {
 
     // 1. SCRAPE USING APIFY
     const scrapeRes = await fetch(
-      "https://api.apify.com/v2/acts/apify~website-content-crawler/run-sync-get-dataset-items?token=REDACTED",
+      "https://api.apify.com/v2/acts/apify~website-content-crawler/run-sync-get-dataset-items?token="+process.env.APIFY_API_TOKEN,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
